@@ -1,0 +1,61 @@
+function doGet(e) {
+  const sheet = SpreadsheetApp
+                  .getActiveSpreadsheet()
+                  .getSheetByName('Sheet1');
+  const p = e.parameter;
+  const now = new Date();
+  
+  // 1) ping test
+  if (p.test === 'ping') {
+    return ContentService.createTextOutput('pong');
+  }
+  
+  // 2) per-second data
+  if (p.type === 'second'
+      && p.hour 
+      && p.duration 
+      && p.voltage 
+      && p.current 
+      && p.power 
+      && p.whr) {
+    sheet.appendRow([
+      now,                  // Timestamp
+      'Second',             // Type
+      Number(p.hour),       // Hour
+      Number(p.duration),   // Duration (s)
+      Number(p.voltage),    // Voltage (V)
+      Number(p.current),    // Current (mA)
+      Number(p.power),      // Power (W)
+      Number(p.whr)         // Whr
+    ]);
+    return ContentService.createTextOutput('second-logged');
+  }
+  
+  // 3) hourly mean (if used)
+  if (p.type === 'hourly' && p.hourMean && p.meanWh) {
+    sheet.appendRow([
+      now,
+      'HourlyMean',
+      Number(p.hourMean),
+      '', '', '',
+      Number(p.meanWh),
+      ''
+    ]);
+    return ContentService.createTextOutput('hour-mean-logged');
+  }
+  
+  // 4) daily summary (if used)
+  if (p.type === 'daily' && p.unitsDay && p.cost && p.avgHr) {
+    sheet.appendRow([
+      now,
+      'DailySummary',
+      '', '', '', '',
+      Number(p.unitsDay),
+      Number(p.cost),
+      Number(p.avgHr)
+    ]);
+    return ContentService.createTextOutput('daily-summary-logged');
+  }
+  
+  return ContentService.createTextOutput('invalid-request');
+}
